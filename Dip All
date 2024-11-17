@@ -1,0 +1,1306 @@
+2-d
+
+
+
+
+
+1. [a]. DDA Line Drawing Algorithm
+
+#include< graphics.h>
+#include<stdio.h>
+#include<iostream.h>
+#include<math.h>
+#include<conio.h>
+#include<dos.h>
+
+int maxx, maxy;
+
+class Line
+{
+float x1, x2, y1, y2, dx, dy, length, x, y;
+int i, gd, gm;
+public:
+void getData();
+void draw();
+};
+void Line :: getData()
+{
+cout<<":\n Enter the x coordinate of first point :";
+cin>>x1;
+cout<<"\n Enter the y coordinate of first point :";
+cin>>y1;
+
+cout<<":\n Enter the x coordinate of second point :";
+cin>>x2;
+cout<<":\n Enter the y coordinate of second point :";
+cin>>y2;
+}
+void Line :: draw()
+{
+dx = abs(x2-x1);
+dy = abs(y2-y1);
+if(dx>=dy)
+length = dx;
+else
+length =dy;
+dx = (x2-x1)/length;
+dy = (y2-y1)/length;
+x = x1+0.5;
+y = y1+0.5;
+i=1;
+while (i<=length)
+{
+//Rounding
+putpixel(320+x, 240-y,15);
+x = x + dx;
+y = y + dy;
+i++;
+delay(100);
+}
+}
+
+
+int main() {
+    int maxx, maxy;
+    int gd = DETECT, gm;
+
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI");  // Specify the correct path to BGI
+
+    maxx = getmaxx();  // Get the max x coordinate of the screen
+    maxy = getmaxy();  // Get the max y coordinate of the screen
+
+    // Draw the axis lines (x and y axes)
+    line(320, 0, 320, maxy);  // y-axis
+    line(0, 240, maxx, 240);  // x-axis
+
+    cout << "\nmaxx = " << maxx << " maxy = " << maxy << endl;
+
+    // Create an object of the Line class
+    Line l;
+
+    l.getData();  // Get the coordinates of the points
+    l.draw();     // Draw the line using the DDA algorithm
+
+    getch();  // Wait for user input
+    closegraph();  // Close the graphics mode before exiting
+    return 0;
+}
+
+1 [b]. Bresenhm's Line Drawing Algorithm
+
+#include <graphics.h>
+#include <stdio.h>
+#include <iostream.h>
+#include <math.h>
+#include <conio.h>
+#include <dos.h>
+
+int maxx, maxy;
+
+class Line {
+private:
+    int x1, y1, x2, y2;
+    int dx, dy, p, x, y;
+    int gd, gm;
+
+public:
+   /* Line() : gd(DETECT), gm(DETECT) {
+	initgraph(&gd, &gm, "C:\\TurboC3\\BGI"); // Update path to the BGI folder
+    }*/
+
+    // Function to get the coordinates of two points from the user
+    void getData() {
+        cout << "\nEnter the x coordinate of first point: ";
+        cin >> x1;
+        cout << "\nEnter the y coordinate of first point: ";
+        cin >> y1;
+        cout << "\nEnter the x coordinate of second point: ";
+        cin >> x2;
+        cout << "\nEnter the y coordinate of second point: ";
+        cin >> y2;
+    }
+
+    // Function to implement Bresenham's Line Drawing Algorithm
+    void draw() {
+        dx = x2 - x1;
+        dy = y2 - y1;
+
+        // Bresenham's algorithm setup
+        p = 2 * dy - dx;
+        x = x1;
+        y = y1;
+
+        // Draw the starting point
+        putpixel(320 + x, 240 - y, 15);  // Rounding offset applied to center (320, 240)
+
+        // Bresenham's Line Drawing Algorithm
+        while (x < x2) {
+            if (p < 0) {
+                p = p + 2 * dy;  // Increment p and only update x
+            } else {
+                p = p + 2 * (dy - dx);  // Increment p and both x and y
+                y = y + 1;  // Move to the next row (upwards)
+            }
+            x = x + 1;  // Move to the next column
+            putpixel(320 + x, 240 - y, 15);  // Plot the pixel with the rounding offset applied
+	delay(100);
+	}
+    }
+
+    // Destructor to close the graphics window
+    ~Line() {
+        closegraph(); // Close the graphics mode before exiting
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+
+    initgraph(&gd, &gm, "C:\\TurboC3\\BGI");  // Initialize graphics mode, update path if needed
+
+    maxx = getmaxx(); // Get the maximum x-coordinate of the screen
+    maxy = getmaxy(); // Get the maximum y-coordinate of the screen
+
+    // Draw the axis lines (x and y axes)
+    line(320, 0, 320, maxy); // y-axis
+    line(0, 240, maxx, 240); // x-axis
+
+    cout << "\nmaxx = " << maxx << " maxy = " << maxy << endl;
+
+    // Create an object of the Line class
+    Line l;
+
+    l.getData(); // Get the coordinates of the points
+    l.draw();    // Draw the line using Bresenham's algorithm
+
+    getch();     // Wait for a key press
+    closegraph(); // Close the graphics mode before exiting
+
+    return 0;
+}
+
+2. CIRCLE Drawing Algorithm
+
+#include <graphics.h>
+#include <iostream.h>
+#include <conio.h>
+#include <dos.h>  // For delay function
+
+class Circle {
+private:
+    int xc, yc, r;  // Center and radius of the circle
+
+public:
+    // Constructor to initialize the circle's center and radius
+    Circle(int centerX, int centerY, int radius) {
+        xc = centerX;
+        yc = centerY;
+        r = radius;
+    }
+
+    // Function to draw the circle using Bresenham's Midpoint Circle Algorithm
+    void draw() {
+        int x = 0;
+        int y = r;
+        int p = 1 - r;  // Initial decision parameter
+
+        // Plot the initial points in all 8 octants
+        plotPoints(x, y);
+
+        // Continue plotting until x >= y
+        while (x < y) {
+            x++;
+
+            // Update decision parameter
+            if (p < 0) {
+                p = p + 2 * x + 1;  // Decision is to move horizontally
+            } else {
+                y--;  // Decision is to move diagonally
+                p = p + 2 * (x - y) + 1;
+            }
+
+            // Plot the points in all 8 octants
+            plotPoints(x, y);
+            delay(50);  // Delay for 50 milliseconds to make drawing visible
+        }
+    }
+
+private:
+    // Function to plot the points in all 8 octants of the circle
+    void plotPoints(int x, int y) {
+        putpixel(xc + x, yc - y, WHITE);  // Top right
+        putpixel(xc - x, yc - y, WHITE);  // Top left
+        putpixel(xc + x, yc + y, WHITE);  // Bottom right
+        putpixel(xc - x, yc + y, WHITE);  // Bottom left
+        putpixel(xc + y, yc - x, WHITE);  // Right top
+        putpixel(xc - y, yc - x, WHITE);  // Left top
+        putpixel(xc + y, yc + x, WHITE);  // Right bottom
+        putpixel(xc - y, yc + x, WHITE);  // Left bottom
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+    int xc, yc, r;
+
+    // Initialize graphics mode
+    initgraph(&gd, &gm, "C:\\TurboC3\\BGI");  // Specify the correct path to BGI folder
+
+    // Input center and radius of the circle
+    cout << "Enter the center coordinates (xc, yc) of the circle: ";
+    cin >> xc >> yc;
+    cout << "Enter the radius of the circle: ";
+    cin >> r;
+
+    // Create an object of Circle class and draw the circle
+    Circle circle(xc, yc, r);
+    circle.draw();  // Draw the circle using Midpoint Circle Algorithm
+
+    getch();  // Wait for user input
+    closegraph();  // Close graphics mode before exiting
+
+    return 0;
+}
+
+
+3. Ellips Drawing Algorithm
+
+#include <iostream.h>
+#include <graphics.h>
+#include <math.h>
+#include <dos.h>
+#include <conio.h>
+
+class Ellipse {
+private:
+    int centerX, centerY; // Center of the ellipse
+    int rx, ry;           // Radii of the ellipse
+    int color;            // Color of the ellipse
+
+    // Function to plot the symmetrical points of the ellipse with a delay
+    void plotPoints(int x, int y) {
+	putpixel(centerX + x, centerY + y, color);
+	putpixel(centerX + x, centerY - y, color);
+	putpixel(centerX - x, centerY + y, color);
+	putpixel(centerX - x, centerY - y, color);
+	delay(10); // Add delay of 10 milliseconds to see the drawing process
+    }
+
+public:
+    // Constructor to initialize the ellipse parameters
+    Ellipse(int cx, int cy, int rX, int rY, int col = 12)
+	: centerX(cx), centerY(cy), rx(rX), ry(rY), color(col) {}
+
+    // Function to draw the ellipse using the midpoint algorithm
+    void draw() {
+	int x = 0, y = ry;
+	double rx2 = rx * rx;
+	double ry2 = ry * ry;
+	double rx2ry = rx2 * ry;
+	double rx2ry2 = rx2 * ry2;
+
+	double dx = 2 * ry2 * x;
+	double dy = 2 * rx2 * y;
+
+	// Initial decision parameters for Region 1
+	double p1 = ry2 - rx2ry + 0.25 * rx2;
+
+	// Region 1: slope > -1
+	while (dx < dy) {
+	    plotPoints(x, y);
+	    x++;
+	    dx += 2 * ry2;
+	    if (p1 < 0) {
+		p1 += dx + ry2;
+	    } else {
+		y--;
+		dy -= 2 * rx2;
+		p1 += dx - dy + ry2;
+	    }
+	}
+
+	// Initial decision parameter for Region 2
+	double p2 = ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y - 1) * (y - 1) - rx2ry2;
+
+	// Region 2: slope <= -1
+	while (y >= 0) {
+	    plotPoints(x, y);
+	    y--;
+	    dy -= 2 * rx2;
+	    if (p2 > 0) {
+		p2 += ry2 - dy;
+	    } else {
+		x++;
+		dx += 2 * ry2;
+		p2 += dx - dy + rx2;
+	    }
+	}
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\bgi");
+
+    int rx, ry;
+    cout << "Enter the x-radius (rx) and y-radius (ry): ";
+    cin >> rx >> ry;
+
+    // Create an Ellipse object with center at (200, 200), input radii, and color 12
+    Ellipse ellipse(200, 200, rx, ry, 12);
+
+    // Draw the ellipse with a delay between points
+    ellipse.draw();
+
+    getch();
+    closegraph();
+    return 0;
+}
+
+
+4. Polygon Filling Algorithm
+#include <graphics.h>
+#include <conio.h>
+#include <iostream.h>
+#include <dos.h>
+
+class Polygon {
+private:
+    int n;                  // Number of edges (vertices)
+    int a[20][2];           // Coordinates of the vertices
+    float s[20];            // Slopes of the edges
+    int xi[20];             // X-intersections for the scanline algorithm
+
+public:
+    // Constructor to initialize the polygon
+    Polygon(int edges) : n(edges) {
+        int i;  // Declare 'i' outside loop to avoid multiple declarations
+
+        // Input the coordinates for the vertices
+        cout << "Enter the coordinates (X Y) of the polygon vertices:\n";
+        for (i = 0; i < n; i++) {
+            cout << "X" << i << " Y" << i << ": ";
+            cin >> a[i][0] >> a[i][1];
+        }
+        // Close the polygon by connecting the last vertex to the first
+        a[n][0] = a[0][0];
+        a[n][1] = a[0][1];
+    }
+
+    // Method to calculate slopes of the edges
+    void calculateSlopes() {
+        int i;  // Reuse 'i' for each loop
+        for (i = 0; i < n; i++) {
+            int dy = a[i + 1][1] - a[i][1];
+            int dx = a[i + 1][0] - a[i][0];
+            if (dy == 0)
+                s[i] = 1.0;  // Horizontal line
+            else if (dx == 0)
+                s[i] = 0.0;  // Vertical line
+            else
+                s[i] = (float)dx / dy;  // General slope
+        }
+    }
+
+    // Method to draw the polygon edges
+    void drawEdges() {
+        int i;  // Reuse 'i' for each loop
+        for (i = 0; i < n; i++) {
+            line(a[i][0], a[i][1], a[i + 1][0], a[i + 1][1]);
+        }
+    }
+
+    // Method to find intersections and fill the polygon using scanline algorithm
+    void fillPolygon() {
+        int y, i, j, k, temp;  // Declare all loop variables outside the loops
+
+        for (y = 0; y < 480; y++) {
+            k = 0;
+
+            // Find intersections of the edges with the scanline
+            for (i = 0; i < n; i++) {
+                if (((a[i][1] <= y) && (a[i + 1][1] > y)) || 
+                    ((a[i][1] > y) && (a[i + 1][1] <= y))) {
+                    xi[k] = (int)(a[i][0] + s[i] * (y - a[i][1]));
+                    k++;
+                }
+            }
+
+            // Sort the intersections
+            for (j = 0; j < k - 1; j++) {
+                for (i = 0; i < k - 1; i++) {
+                    if (xi[i] > xi[i + 1]) {
+                        temp = xi[i];
+                        xi[i] = xi[i + 1];
+                        xi[i + 1] = temp;
+                    }
+                }
+	    }
+
+	    // Directly fill between pairs of intersections
+	    setcolor(3);  // Set color for filling
+	    for (i = 0; i < k; i += 2) {
+		line(xi[i], y, xi[i + 1] + 1, y);
+		delay(100);  // Add a delay of 10 milliseconds to visualize filling process
+            }
+        }
+    }
+
+    // Method to display the polygon
+    void draw() {
+        int gd = DETECT, gm;
+        initgraph(&gd, &gm, "C:\\Turboc3\\bgi");
+
+        // Draw the polygon edges
+        drawEdges();
+
+        // Calculate the slopes for each edge
+        calculateSlopes();
+
+        // Fill the polygon using the scanline algorithm
+        fillPolygon();
+
+        getch();  // Wait for user input before closing
+        closegraph();
+    }
+};
+
+int main() {
+    int n;
+
+    cout << "Enter the number of edges (vertices) of the polygon: ";
+    cin >> n;
+
+    // Create a Polygon object and draw it
+    Polygon polygon(n);
+    polygon.draw();
+
+    return 0;
+}
+
+
+5. [a]. Line Cliping Algorithm
+
+#include <graphics.h>
+#include <iostream.h>
+#include <conio.h>
+#include <math.h>
+#include <dos.h>
+
+class Rectangle {
+public:
+    int xleft, xright, ytop, ybottom;
+
+    Rectangle(int xl, int xr, int yt, int yb)
+        : xleft(xl), xright(xr), ytop(yt), ybottom(yb) {}
+
+    void draw() const {
+        rectangle(xleft, ytop, xright, ybottom);
+    }
+
+    int getCode(int x, int y) const {
+        int code = 0;
+        if (x < xleft) code |= 1;          // Left
+        if (x > xright) code |= 2;         // Right
+        if (y < ytop) code |= 4;           // Top
+        if (y > ybottom) code |= 8;        // Bottom
+        return code;
+    }
+};
+
+class Line {
+private:
+    float x1, y1, x2, y2;
+
+public:
+    Line(float xStart, float yStart, float xEnd, float yEnd)
+        : x1(xStart), y1(yStart), x2(xEnd), y2(yEnd) {}
+
+    void draw(int color = RED) const {
+        setcolor(color);
+        line(x1, y1, x2, y2);
+    }
+
+    void clipAndDraw(const Rectangle& clipRect, int color = GREEN) {
+        int code1 = clipRect.getCode(x1, y1);
+        int code2 = clipRect.getCode(x2, y2);
+        int accept = 0;  // Replacing `bool accept = false` with `int accept = 0`
+
+        while (1) {
+            if ((code1 == 0) && (code2 == 0)) {
+                accept = 1;  // Setting `accept` to 1 instead of `true`
+                break;
+            } else if (code1 & code2) {
+                break;
+            } else {
+                int codeOut;
+                float x, y;
+
+                if (code1 != 0)
+                    codeOut = code1;
+                else
+                    codeOut = code2;
+
+                if (codeOut & 8) { // Point is above the window
+                    x = x1 + (x2 - x1) * (clipRect.ybottom - y1) / (y2 - y1);
+                    y = clipRect.ybottom;
+                } else if (codeOut & 4) { // Point is below the window
+                    x = x1 + (x2 - x1) * (clipRect.ytop - y1) / (y2 - y1);
+                    y = clipRect.ytop;
+                } else if (codeOut & 2) { // Point is to the right of window
+                    y = y1 + (y2 - y1) * (clipRect.xright - x1) / (x2 - x1);
+                    x = clipRect.xright;
+                } else if (codeOut & 1) { // Point is to the left of window
+                    y = y1 + (y2 - y1) * (clipRect.xleft - x1) / (x2 - x1);
+                    x = clipRect.xleft;
+                }
+
+                if (codeOut == code1) {
+                    x1 = x;
+                    y1 = y;
+                    code1 = clipRect.getCode(x1, y1);
+                } else {
+                    x2 = x;
+                    y2 = y;
+                    code2 = clipRect.getCode(x2, y2);
+                }
+            }
+        }
+
+        if (accept) {  // Checking if `accept` is 1 instead of `true`
+            setcolor(color);
+            line(x1, y1, x2, y2);
+        }
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI");
+
+    Rectangle clipRect(100, 540, 100, 400);
+    clipRect.draw();
+
+    int numLines;
+    cout << "Enter number of lines: ";
+    cin >> numLines;
+
+    for (int i = 0; i < numLines; ++i) {
+        float x1, y1, x2, y2;
+        cout << "Enter coordinates for line " << i + 1 << " (x1 y1 x2 y2): ";
+        cin >> x1 >> y1 >> x2 >> y2;
+        Line line(x1, y1, x2, y2);
+
+        // Draw initial line in red
+        line.draw(RED);
+
+        // Apply line clipping and draw clipped line in green
+	delay(1000); // Delay for visual effect
+        cleardevice();
+        clipRect.draw();
+        line.clipAndDraw(clipRect, GREEN);
+    }
+
+    getch();
+    closegraph();
+    return 0;
+}
+
+
+5. [b]. Polygon Cliping Algorithm
+
+#include <iostream.h>
+#include <graphics.h>
+#include <math.h>
+#include <dos.h>
+#include <conio.h>
+
+class PolygonClipper {
+private:
+    int xleft, xright, ytop, ybottom;
+    int vertices[10][2];  // Array to hold polygon vertices
+    int n;                // Number of vertices
+
+    // Function to compute the code for a point
+    int computeCode(int x, int y) {
+        int code = 0;
+        if (x < xleft) code |= 1;      // Left
+        else if (x > xright) code |= 2; // Right
+        if (y < ytop) code |= 4;       // Top
+        else if (y > ybottom) code |= 8; // Bottom
+        return code;
+    }
+
+    // Function to clip a line segment (x1, y1) to (x2, y2)
+    void clipLine(int x1, int y1, int x2, int y2) {
+        int code1 = computeCode(x1, y1);
+        int code2 = computeCode(x2, y2);
+        int accept = 0;
+
+        while (1) {
+            if ((code1 == 0) && (code2 == 0)) { // Both points inside
+                accept = 1;
+                break;
+            } else if (code1 & code2) { // Both points outside
+                break;
+            } else {
+                int codeOut;
+                int x, y;
+
+                // At least one endpoint is outside
+                if (code1 != 0) codeOut = code1;
+                else codeOut = code2;
+
+                if (codeOut & 1) { // Left
+                    x = xleft;
+                    y = y1 + (y2 - y1) * (xleft - x1) / (x2 - x1);
+                } else if (codeOut & 2) { // Right
+                    x = xright;
+                    y = y1 + (y2 - y1) * (xright - x1) / (x2 - x1);
+                } else if (codeOut & 4) { // Top
+                    y = ytop;
+                    x = x1 + (x2 - x1) * (ytop - y1) / (y2 - y1);
+                } else if (codeOut & 8) { // Bottom
+                    y = ybottom;
+                    x = x1 + (x2 - x1) * (ybottom - y1) / (y2 - y1);
+                }
+
+                // Replace the outside point with the intersection point
+                if (codeOut == code1) {
+                    x1 = x;
+                    y1 = y;
+                    code1 = computeCode(x1, y1);
+                } else {
+                    x2 = x;
+                    y2 = y;
+                    code2 = computeCode(x2, y2);
+                }
+            }
+        }
+        if (accept) {
+            setcolor(GREEN);
+            line(x1, y1, x2, y2);
+            delay(500); // Adding a delay to observe the drawing process
+        }
+    }
+
+public:
+    // Constructor to initialize the clipping window and polygon
+    PolygonClipper(int left, int right, int top, int bottom) 
+        : xleft(left), xright(right), ytop(top), ybottom(bottom) {
+        n = 0;
+    }
+
+    // Method to input the polygon vertices
+    void inputPolygon() {
+        cout << "Enter the number of vertices: ";
+        cin >> n;
+        cout << "Enter the coordinates of the vertices:\n";
+        for (int i = 0; i < n; i++) {
+            cout << "Vertex " << (i + 1) << " (x y): ";
+            cin >> vertices[i][0] >> vertices[i][1];
+        }
+        // Connect the last vertex to the first to close the polygon
+        vertices[n][0] = vertices[0][0];
+        vertices[n][1] = vertices[0][1];
+    }
+
+    // Method to draw the polygon before clipping
+    void drawPolygon() {
+        setcolor(RED);
+        for (int i = 0; i < n; i++) {
+            line(vertices[i][0], vertices[i][1], vertices[i + 1][0], vertices[i + 1][1]);
+            delay(500); // Delay for visibility
+        }
+    }
+
+    // Method to clip and draw the polygon within the clipping window
+    void clipPolygon() {
+        setcolor(BLUE);
+        rectangle(xleft, ytop, xright, ybottom);
+        for (int i = 0; i < n; i++) {
+            clipLine(vertices[i][0], vertices[i][1], vertices[i + 1][0], vertices[i + 1][1]);
+        }
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI");
+
+    PolygonClipper clipper(100, 540, 100, 400);
+    clipper.inputPolygon();
+
+    setbkcolor(WHITE);
+    outtextxy(250, 60, "BEFORE POLYGON CLIPPING");
+    clipper.drawPolygon();
+
+    getch();
+    cleardevice();
+
+    outtextxy(250, 60, "AFTER POLYGON CLIPPING");
+    clipper.clipPolygon();
+
+    getch();
+    closegraph();
+    return 0;
+}
+
+
+6. [a]. Composite 2-D transformation, (rotation)
+
+#include <iostream.h>
+#include <graphics.h>
+#include <conio.h>
+#include <math.h>
+
+class Rotation {
+private:
+    int x1, y1, x2, y2, x3, y3; // Original coordinates of the triangle vertices
+    int xRot1, yRot1, xRot2, yRot2, xRot3, yRot3; // Rotated coordinates of the triangle vertices
+    float angle; // Rotation angle in degrees
+
+    // Function to apply centroid-based rotation
+    void rotateAroundCentroid() {
+        float rad = angle * 3.14 / 180; // Convert angle to radians
+
+        // Calculate the centroid
+        int cx = (x1 + x2 + x3) / 3;
+        int cy = (y1 + y2 + y3) / 3;
+
+        // Rotate each point around the centroid
+        xRot1 = cx + (x1 - cx) * cos(rad) - (y1 - cy) * sin(rad);
+        yRot1 = cy + (x1 - cx) * sin(rad) + (y1 - cy) * cos(rad);
+
+        xRot2 = cx + (x2 - cx) * cos(rad) - (y2 - cy) * sin(rad);
+        yRot2 = cy + (x2 - cx) * sin(rad) + (y2 - cy) * cos(rad);
+
+        xRot3 = cx + (x3 - cx) * cos(rad) - (y3 - cy) * sin(rad);
+        yRot3 = cy + (x3 - cx) * sin(rad) + (y3 - cy) * cos(rad);
+    }
+
+public:
+    // Constructor to initialize triangle vertices and rotation angle
+    Rotation(int x1, int y1, int x2, int y2, int x3, int y3, float angle)
+        : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), angle(angle) {}
+
+    // Function to draw the original triangle
+    void drawOriginal() {
+        setcolor(WHITE);
+        line(x1, y1, x2, y2);
+        line(x2, y2, x3, y3);
+        line(x3, y3, x1, y1);
+        outtextxy(x1 - 10, y1 - 20, "Before Rotation");
+    }
+
+    // Function to draw the rotated triangle
+    void drawRotated() {
+        cleardevice();  // Clear previous drawing to avoid overlap
+        rotateAroundCentroid();
+        setcolor(YELLOW);
+        line(xRot1, yRot1, xRot2, yRot2);
+        line(xRot2, yRot2, xRot3, yRot3);
+        line(xRot3, yRot3, xRot1, yRot1);
+	outtextxy(xRot3 + 10, yRot3 + 5 , "After Rotation");
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI");
+
+    int x1, y1, x2, y2, x3, y3;
+    float angle;
+
+    cout << "Enter the first coordinate (x y): ";
+    cin >> x1 >> y1;
+    cout << "Enter the second coordinate (x y): ";
+    cin >> x2 >> y2;
+    cout << "Enter the third coordinate (x y): ";
+    cin >> x3 >> y3;
+    cout << "Enter the rotation angle (in degrees): ";
+    cin >> angle;
+
+    // Creating an instance of the Rotation class
+    Rotation triangle(x1, y1, x2, y2, x3, y3, angle);
+
+    // Draw the original triangle
+    cout << "Original Triangle:\n";
+    triangle.drawOriginal();
+    getch();
+
+    // Clear the screen and draw the rotated triangle
+    triangle.drawRotated();
+    getch();
+
+    closegraph();
+    return 0;
+}
+
+
+6. [b]. Composite 2-D transformation,(Scaling)
+
+#include <iostream.h>
+#include <graphics.h>
+#include <conio.h>
+#include <math.h>
+
+class ScalingTransformation {
+private:
+    int x, y, x1, y1, x2, y2; // Original coordinates of the triangle vertices
+    int sx, sy;               // Scaling factors
+
+    // Function to draw a triangle based on the given vertices
+    void drawTriangle(int x, int y, int x1, int y1, int x2, int y2, const char* label) {
+        line(x, y, x1, y1);
+        line(x1, y1, x2, y2);
+        line(x2, y2, x, y);
+        outtextxy(x - 10, y - 20, label);
+    }
+
+public:
+    // Constructor to initialize triangle vertices and scaling factors
+    ScalingTransformation(int x, int y, int x1, int y1, int x2, int y2, int sx, int sy)
+        : x(x), y(y), x1(x1), y1(y1), x2(x2), y2(y2), sx(sx), sy(sy) {}
+
+    // Function to display the original triangle
+    void displayOriginal() {
+        drawTriangle(x, y, x1, y1, x2, y2, "Before Scaling");
+    }
+
+    // Function to scale the triangle and display the scaled triangle
+    void scaleAndDisplay() {
+        int newX = x * sx;
+        int newY = y * sy;
+        int newX1 = x1 * sx;
+        int newY1 = y1 * sy;
+        int newX2 = x2 * sx;
+        int newY2 = y2 * sy;
+
+        drawTriangle(newX, newY, newX1, newY1, newX2, newY2, "After Scaling");
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI");
+
+    int x, y, x1, y1, x2, y2, sx, sy;
+    
+    cout << "Enter the first coordinate (x y): ";
+    cin >> x >> y;
+    cout << "Enter the second coordinate (x1 y1): ";
+    cin >> x1 >> y1;
+    cout << "Enter the third coordinate (x2 y2): ";
+    cin >> x2 >> y2;
+
+    cout << "Enter the scaling factors (sx sy): ";
+    cin >> sx >> sy;
+
+    // Create an object of ScalingTransformation with the input values
+    ScalingTransformation triangle(x, y, x1, y1, x2, y2, sx, sy);
+
+    // Display the original triangle
+    cout << "Original Triangle:\n";
+    triangle.displayOriginal();
+    getch();
+
+    // Display the scaled triangle
+    cleardevice();
+    cout << "Scaled Triangle:\n";
+    triangle.scaleAndDisplay();
+    getch();
+
+    closegraph();
+    return 0;
+}
+
+6. [c]. Composite 2-D transformation, (REFLACTION)
+
+#include <iostream.h>
+#include <graphics.h>
+#include <conio.h>
+#include <math.h>
+
+class Reflection {
+private:
+    int x1, y1, x2, y2, x3, y3; // Coordinates of the triangle vertices
+    int xCenter;                // Center x-axis (middle of the screen)
+    int yCenter;                // Center y-axis (middle of the screen)
+
+    // Draws coordinate axes
+    void drawAxes() {
+        line(xCenter, 0, xCenter, 480); // Vertical axis
+        line(0, yCenter, 640, yCenter); // Horizontal axis
+    }
+
+public:
+    // Constructor to initialize the triangle vertices and center coordinates
+    Reflection(int x1, int y1, int x2, int y2, int x3, int y3)
+        : x1(x1), y1(y1), x2(x2), y2(y2), x3(x3), y3(y3), xCenter(320), yCenter(240) {}
+
+    // Function to draw the original triangle
+    void drawOriginal() {
+        drawAxes();
+        line(x1, y1, x2, y2);
+        line(x2, y2, x3, y3);
+        line(x3, y3, x1, y1);
+    }
+
+    // Reflects the triangle along the x-axis
+    void reflectX() {
+        drawAxes();
+        int newX1 = (xCenter - x1) + xCenter;
+        int newX2 = (xCenter - x2) + xCenter;
+        int newX3 = (xCenter - x3) + xCenter;
+
+        line(newX1, y1, newX2, y2);
+        line(newX2, y2, newX3, y3);
+        line(newX3, y3, newX1, y1);
+    }
+
+    // Reflects the triangle along the y-axis
+    void reflectY() {
+        drawAxes();
+        int newY1 = (yCenter - y1) + yCenter;
+        int newY2 = (yCenter - y2) + yCenter;
+        int newY3 = (yCenter - y3) + yCenter;
+
+        line(x1, newY1, x2, newY2);
+        line(x2, newY2, x3, newY3);
+        line(x3, newY3, x1, newY1);
+    }
+};
+
+int main() {
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI");
+
+    int x1, y1, x2, y2, x3, y3;
+    cout << "Enter the first coordinate (x y): ";
+    cin >> x1 >> y1;
+    cout << "Enter the second coordinate (x y): ";
+    cin >> x2 >> y2;
+    cout << "Enter the third coordinate (x y): ";
+    cin >> x3 >> y3;
+
+    Reflection triangle(x1, y1, x2, y2, x3, y3);
+
+    // Draw the original triangle
+    cout << "Original Triangle:\n";
+    triangle.drawOriginal();
+    getch();
+
+    // Reflect triangle along the x-axis
+    cleardevice();
+    cout << "Reflection along X-axis:\n";
+    triangle.reflectX();
+    getch();
+
+    // Reflect triangle along the y-axis
+    cleardevice();
+    cout << "Reflection along Y-axis:\n";
+    triangle.reflectY();
+    getch();
+
+    closegraph();
+    return 0;
+}
+
+7. Read an 8 bit image and then apply different image enhancement techniques: • Brightness improvement • Brightness reduction • Thresholding • Negative of an image • Log transformation • Power Law transformation.
+
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+# Read the image
+img = cv2.imread('pout.jpg', cv2.IMREAD_GRAYSCALE)
+# Brightness Improvement (Histogram Equalization)
+bi = cv2.equalizeHist(img)
+# Brightness Reduction (Divide by 2)
+br = img // 2
+# Binary Image (Thresholding at 127)
+bw = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)[1]
+# Thresholding at 110
+bw2 = img < 110
+# Negative of the Image
+ni = cv2.bitwise_not(img)
+# Log Transformation
+lt = np.log1p(img.astype(float))
+# Power Law Transformation (Gamma correction)
+gamma = 2
+a = 1
+plt_img = a * np.power(img.astype(float), gamma)
+# Display the images
+plt.figure(figsize=(12, 12))
+# Original Image
+plt.subplot(3, 3, 1), plt.imshow(img, cmap='gray'), plt.title('Original Image')
+# Brightness Improvement
+plt.subplot(3, 3, 2), plt.imshow(bi, cmap='gray'), plt.title('Brightness Improvement')
+# Brightness Reduction
+plt.subplot(3, 3, 3), plt.imshow(br, cmap='gray'), plt.title('Brightness Reduction')
+# Binary Image
+plt.subplot(3, 3, 4), plt.imshow(bw, cmap='gray'), plt.title('Binary Image')
+# Thresholding=110
+plt.subplot(3, 3, 5), plt.imshow(bw2, cmap='gray'), plt.title('Thresholding = 110')
+# Negative of the Image
+plt.subplot(3, 3, 6), plt.imshow(ni, cmap='gray'), plt.title('Negative of Image')
+# Log Transformation
+plt.subplot(3, 3, 7), plt.imshow(lt, cmap='gray'), plt.title('Log Transformation')
+# Power Law Transformation
+plt.subplot(3, 3, 8), plt.imshow(plt_img, cmap='gray'), plt.title('Power Law Transform')
+# Show the plot
+plt.show()
+
+8. Read an image, plot its histogram then do histogram equalization. Comment about the result.
+
+import cv2 # OpenCV library
+import numpy as np # NumPy library
+import matplotlib.pyplot as plt # Matplotlib library
+# Read the image
+img = cv2.imread('pout.jpg', cv2.IMREAD_GRAYSCALE)
+# Plot original image histogram
+plt.subplot(2, 1, 1)
+plt.hist(img.ravel(), 256, [0, 256])
+plt.title('Image Histogram')
+# Histogram Equalization
+he = cv2.equalizeHist(img)
+# Plot histogram after equalization
+plt.subplot(2, 1, 2)
+plt.hist(he.ravel(), 256, [0, 256])
+plt.title('Histogram Equalization')
+plt.show()
+
+
+9. Read an image and apply : • Implement Gray level slicing (intensity level slicing) in to read cameraman image. • Read an 8 bit image and to see the effect of each bit on the image. • Read an image and to extract 8 different planes i.e. ‘bit plane slicing.”
+
+import cv2 # OpenCV library for image processing
+import numpy as np # Numpy library for numerical operations
+import matplotlib.pyplot as plt # Matplotlib for visualization
+# Read the grayscale image (cameraman.png)
+img = cv2.imread('cameraman.png', cv2.IMREAD_GRAYSCALE)
+# Perform Intensity Level Slicing
+# Intensity values above a certain threshold are set to 255 (white), others to 0 (black)
+# 128 Intensity Slicing: All values above 128 are set to 255 (white), others to 0 (black)
+img128 = np.where(img > 128, 255, 0)
+# 110 Intensity Slicing: All values above 110 are set to 255 (white), others to 0 (black)
+img110 = np.where(img > 110, 255, 0)
+# Bit Plane Slicing: Extracting individual bit planes (0th bit to 7th bit)
+b1 = img & 1 # Least significant bit (LSB)
+b2 = (img >> 1) & 1 # 2nd bit
+b3 = (img >> 2) & 1 # 3rd bit
+b4 = (img >> 3) & 1 # 4th bit
+b5 = (img >> 4) & 1 # 5th bit
+b6 = (img >> 5) & 1 # 6th bit
+b7 = (img >> 6) & 1 # 7th bit
+b8 = (img >> 7) & 1 # Most significant bit (MSB)
+# Plotting the results
+plt.figure(figsize=(12, 10))
+# First row: Display the intensity slicing results
+plt.subplot(2, 1, 1)
+plt.imshow(img128, cmap='gray')
+plt.title('128 Intensity Slicing')
+plt.subplot(2, 1, 2)
+plt.imshow(img110, cmap='gray')
+plt.title('110 Intensity Slicing')
+# Second row: Display each of the bit planes
+plt.figure(figsize=(12, 10))
+plt.subplot(3, 3, 1)
+plt.imshow(b1, cmap='gray')
+plt.title('Bit Plane 1')
+plt.subplot(3, 3, 2)
+plt.imshow(b2, cmap='gray')
+plt.title('Bit Plane 2')
+plt.subplot(3, 3, 3)
+plt.imshow(b3, cmap='gray')
+plt.title('Bit Plane 3')
+plt.subplot(3, 3, 4)
+plt.imshow(b4, cmap='gray')
+plt.title('Bit Plane 4')
+plt.subplot(3, 3, 5)
+plt.imshow(b5, cmap='gray')
+plt.title('Bit Plane 5')
+plt.subplot(3, 3, 6)
+plt.imshow(b6, cmap='gray')
+plt.title('Bit Plane 6')
+plt.subplot(3, 3, 7)
+plt.imshow(b7, cmap='gray')
+plt.title('Bit Plane 7')
+plt.subplot(3, 3, 8)
+plt.imshow(b8, cmap='gray')
+plt.title('Bit Plane 8')
+# Display the original image for reference
+plt.subplot(3, 3, 9)
+plt.imshow(img, cmap='gray')
+plt.title('Original Image')
+# Show all the plots
+plt.show()
+
+11. Implement various Smoothing spatial filter.
+
+import cv2 # OpenCV library for image processing
+import numpy as np # Numpy library for numerical operations
+import matplotlib.pyplot as plt # Matplotlib for visualization
+# Read the grayscale image (cameraman.jpeg)
+img = cv2.imread('cam.jpeg', cv2.IMREAD_GRAYSCALE)
+# Apply Gaussian filters with different kernel sizes and sigmas
+# Gaussian filter with a standard deviation of 2
+iblur1 = cv2.GaussianBlur(img, (0, 0), 2)
+# Gaussian filter with a standard deviation of 4
+iblur2 = cv2.GaussianBlur(img, (0, 0), 4)
+# Gaussian filter with a horizontal kernel (9x1) and a vertical kernel (1x9)
+iblurX = cv2.GaussianBlur(img, (9, 1), 0)
+iblurY = cv2.GaussianBlur(img, (1, 9), 0)
+# Apply Median filter with a kernel size of 3x3
+mf = cv2.medianBlur(img, 3)
+# Disk filter: Create a 5x5 Gaussian kernel and apply it as a disk filter
+df = cv2.getGaussianKernel(5, -1) # Create a Gaussian kernel
+df = np.outer(df, df.transpose()) # Create a 2D Gaussian kernel
+dfr = cv2.filter2D(img, -1, df, borderType=cv2.BORDER_REPLICATE) # Apply the disk filter
+# Plotting the results of the filters
+plt.figure(figsize=(15, 10))
+# Display the Gaussian filter results with different standard deviations
+plt.subplot(2, 3, 1)
+plt.imshow(iblur1, cmap='gray')
+plt.title('Smoothed image, $\\sigma = 2$')
+plt.subplot(2, 3, 2)
+plt.imshow(iblur2, cmap='gray')
+plt.title('Smoothed image, $\\sigma = 4$')
+plt.subplot(2, 3, 3)
+plt.imshow(iblurX, cmap='gray')
+plt.title('Smoothed image, $\\sigma_x = 9$, $\\sigma_y = 1$')
+plt.subplot(2, 3, 4)
+plt.imshow(iblurY, cmap='gray')
+plt.title('Smoothed image, $\\sigma_x = 1$, $\\sigma_y = 9$')
+# Display the median filter result
+plt.subplot(2, 3, 5)
+plt.imshow(mf, cmap='gray')
+plt.title('Median Filter')
+# Display the disk filter result
+plt.subplot(2, 3, 6)
+plt.imshow(dfr, cmap='gray')
+plt.title('Disk Filter')
+# Show the plots
+plt.show()
+
+12. Read an image and apply : • Gaussian 3x3 mask for burring • High pass filter mask with different masks • Laplacian operator with centre value positive and negative • High boost filtering.
+
+import cv2 # OpenCV library for image processing
+import numpy as np # Numpy library for numerical operations
+from matplotlib import pyplot as plt # Matplotlib for visualization
+# Read the image in grayscale
+img = cv2.imread('cameraman.png', cv2.IMREAD_GRAYSCALE)
+# Check if the image is loaded successfully
+if img is None:
+ print("Error: Unable to load the image.")
+else:
+ # Apply 3x3 Gaussian blur mask for blurring the image
+ G = cv2.GaussianBlur(img, (3, 3), 0)
+ # Define a high pass filter mask (Laplacian kernel)
+ H = np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]], dtype=np.float32)
+ HPF1 = cv2.filter2D(img, -1, H, borderType=cv2.BORDER_REPLICATE)
+ # Apply Laplacian operator with a negative center value
+ Lap_negative = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
+ Lap_F1 = cv2.filter2D(img, -1, Lap_negative, borderType=cv2.BORDER_REPLICATE)
+ # Apply Laplacian operator with a positive center value (inverted kernel)
+ Lap_positive = -Lap_negative # Invert the kernel for a positive center
+ Lap_F2 = cv2.filter2D(img, -1, Lap_positive, borderType=cv2.BORDER_REPLICATE)
+ # High boost filtering
+ A = 2 # Amplification factor for high boost filter
+ # Apply averaging filter (3x3 kernel with equal weights)
+ c = cv2.filter2D(img, -1, np.ones((3, 3), dtype=np.float32) / 9, borderType=cv2.BORDER_REPLICATE)
+ # High boost filtering: f = img - c, g = (A - 1) * img + f
+ f = img - c
+ g = (A - 1) * img + f
+ # Plot the results of each filter
+ plt.figure(figsize=(15, 10))
+ # Display the original image
+ plt.subplot(2, 3, 1)
+ plt.imshow(img, cmap='gray')
+ plt.title('Original Image')
+ # Display the image after applying the 3x3 Gaussian blur
+ plt.subplot(2, 3, 2)
+ plt.imshow(G, cmap='gray')
+ plt.title('3x3 Gaussian Mask')
+ # Display the result of the high pass filter
+ plt.subplot(2, 3, 3)
+ plt.imshow(HPF1, cmap='gray')
+ plt.title('High Pass Filter')
+ # Display the result of the Laplacian operator with a negative center
+ plt.subplot(2, 3, 4)
+ plt.imshow(Lap_F1, cmap='gray')
+ plt.title('Laplacian Operator Negative Centre')
+ # Display the result of the Laplacian operator with a positive center
+ plt.subplot(2, 3, 5)
+ plt.imshow(Lap_F2, cmap='gray')
+ plt.title('Laplacian Operator Positive Centre')
+ # Display the result of high boost filtering
+ plt.subplot(2, 3, 6)
+ plt.imshow(np.uint8(g), cmap='gray')
+ plt.title('High Boost Filtering')
+ # Show all the plots
+ plt.show()
+ 
+ 
+ 13. Write a program to implement various low pass filters and high pass filter in frequency domain.
+
+import cv2 # OpenCV library for image processing
+import numpy as np # Numpy library for numerical operations
+import matplotlib.pyplot as plt # Matplotlib for visualization
+# Read the image in grayscale
+img = cv2.imread('cam.jpeg', cv2.IMREAD_GRAYSCALE)
+# Check if the image is loaded successfully
+if img is None:
+ print("Error: Unable to load the image.")
+else:
+ # Low-pass filters (Smoothing)
+ # Apply Gaussian filter for smoothing (low-pass filter)
+ GF = cv2.GaussianBlur(img, (0, 0), 2) # Gaussian blur with a kernel size of (0, 0) and standard
+deviation 2
+ # Apply Median filter for noise reduction (low-pass filter)
+ MF = cv2.medianBlur(img, 3) # Median blur with a kernel size of 3
+ # Apply Disk filter (a type of low-pass filter) using Gaussian kernel
+ DF = cv2.getGaussianKernel(5, -1) # Create a 5x1 Gaussian kernel
+ DF = np.outer(DF, DF.transpose()) # Create a 5x5 filter by taking the outer product
+ DFR = cv2.filter2D(img, -1, DF, borderType=cv2.BORDER_REPLICATE) # Apply the disk filter
+ # High-pass filters (Edge Detection, Sharpening)
+ # Unsharp mask (high-pass filter)
+ UM = cv2.filter2D(img, -1, cv2.getGaussianKernel(5, -1) * (-1),
+borderType=cv2.BORDER_REPLICATE) # Apply unsharp mask by subtracting a Gaussian-blurred
+image
+ # Sobel filter (high-pass filter) for horizontal edge detection
+ SF = cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=3) # Apply Sobel filter in the horizontal direction (dx=1,
+dy=0)
+ # Prewitt filter (high-pass filter) for horizontal edge detection
+ PF = cv2.filter2D(img, -1, np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]]),
+borderType=cv2.BORDER_REPLICATE) # Prewitt filter for edge detection
+ # Plotting the results
+ plt.figure(figsize=(15, 10))
+ # Display the result of the Gaussian filter
+ plt.subplot(2, 3, 1)
+ plt.imshow(GF, cmap='gray')
+ plt.title('Gaussian Filter')
+ # Display the result of the Median filter
+ plt.subplot(2, 3, 2)
+ plt.imshow(MF, cmap='gray')
+ plt.title('Median Filter')
+ # Display the result of the Disk filter
+ plt.subplot(2, 3, 3)
+ plt.imshow(DFR, cmap='gray')
+ plt.title('Disk Filter')
+ # Display the result of the Unsharp mask
+ plt.subplot(2, 3, 4)
+ plt.imshow(UM, cmap='gray')
+ plt.title('Unsharp Mask')
+ # Display the result of the Sobel filter (horizontal edge detection)
+ plt.subplot(2, 3, 5)
+ plt.imshow(SF, cmap='gray')
+  plt.title('Sobel Horizontal Edge-Emphasizing Filter')
+ # Display the result of the Prewitt filter (horizontal edge detection)
+ plt.subplot(2, 3, 6)
+ plt.imshow(PF, cmap='gray')
+ plt.title('Prewitt Horizontal Edge-Emphasizing Filter')
+ # Show the plots
+ plt.show()
+ 
+ 
+ 
