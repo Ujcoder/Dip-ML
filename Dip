@@ -1,0 +1,566 @@
+1-m
+
+
+
+
+
+Q1a. Implement label encoding and display the encoded data.
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+#Sample Data
+data={'Animal':['Dog','Cat','Bird','Dog','Cat','Bird']}
+df=pd.DataFrame(data)
+#label encoding
+encoder=LabelEncoder()
+# performing encoding
+encoded_label=encoder.fit_transform(df['Animal'])
+print(encoded_label)
+
+Q1b. Implement one hot encoding and display the encoded data.
+import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
+# Sample data
+data = {'Animal': ['Dog', 'Cat', 'Bird', 'Dog', 'Cat', 'Bird']}
+df = pd.DataFrame(data)
+# Initiating OneHotEncoder
+encoder = OneHotEncoder(sparse_output=False)
+# Performing One-Hot Encoding
+encoded_array = encoder.fit_transform(df[['Animal']])
+print(encoded_array)
+
+Q2a. Create a sample dataset of two features and 10 records. Scale both the featuresusing Min-Max Scaling
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+# Sample Dataset
+data={'F1':['1','2','3','4','5','6','7','8','9','10'],
+      'F2':['2','4','9','16','25','36','49','64','81','100']}
+df=pd.DataFrame(data)
+# Orignal output
+print('Orignal Dataset :')
+print(df)
+# initialized Scaler
+scaler=MinMaxScaler()
+# performing min max Scaleing
+scaled_data=scaler.fit_transform(df)
+scaled_df=pd.DataFrame(scaled_data,columns=df.columns)
+print(scaled_df)
+
+Q2b. Create a sample dataset of two features and 10 records. Scale both the featuresusing Standard Scalar
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+# Create a sample dataset
+data = {'Feature1': [1,2,3,4,5,6,7,8,9,10],
+'Feature2': [2,4,9,16,25,36,49,64,81,100]}
+df = pd.DataFrame(data)
+# Display the original dataset
+print("Original Dataset:")
+print(df)
+# Initialize StandardScaler
+scaler = StandardScaler()
+# Scale the features
+scaled_data = scaler.fit_transform(df)
+scaled_df = pd.DataFrame(scaled_data, columns=df.columns)
+# Display the scaled dataset
+print("\nScaled Dataset:")
+print(scaled_df)
+
+3a) Dimensionality reduction using PCA Algorithm (sklearn library function PCA)
+import pandas as pd
+from sklearn.decomposition import PCA
+# load Dataset
+data=pd.read_csv('pca.csv')
+#saprating feature and targate variabels 
+X=data.drop('target', axis=1)
+print('Orignal Data :')
+print(X)
+# initilized pca with 2 components
+pca=PCA(n_components=2)
+#fit and transform the data 
+X_pca= pca.fit_transform(X)
+#Converting to DataFrame for better visualization 
+pca_df= pd.DataFrame(data=X_pca, columns=['PC1','PC2'])
+print('\n Transformed Data (First two Principal Components):')
+print('First Principal Component :')
+print(pca_df['PC1'])
+print('\n Second Principal Component :')
+print(pca_df['PC2'])
+
+3b) Dimensionality reduction using PCA Algorithm (Manual Implementation fromScratch)
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+data = pd.read_csv('pca.csv') # Load the dataset
+X = data.drop('target', axis=1) # Separate features and target variable
+# Step 1: Mean centering (instead of StandardScaler)
+X_centered = X - np.mean(X, axis=0)
+# Step 2: Compute the covariance matrix
+covariance_matrix = np.cov(X_centered.T)
+# Step 3: Compute the eigenvectors and eigenvalues
+eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
+# Step 4: Sort the eigenvalues and eigenvectors
+sorted_indices = np.argsort(eigenvalues)[::-1]
+sorted_eigenvalues = eigenvalues[sorted_indices]
+sorted_eigenvectors = eigenvectors[:, sorted_indices]
+# Step 5: Choose the number of principal components
+num_components = 2
+# Step 6: Project the data onto the principal components
+principal_components = sorted_eigenvectors[:, :num_components]
+X_pca = X_centered.dot(principal_components)
+print(X_pca.iloc[:,0], X_pca.iloc[:,1])
+
+3c) Dimensionality reduction using LDA Algorithm (using sklearn Library function:
+LinearDiscriminantAnalysis)
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+import matplotlib.pyplot as plt
+# Load dataset
+data = load_iris()
+X = data.data
+y = data.target
+# Apply Library LDA
+lda_library = LinearDiscriminantAnalysis(n_components=2)
+lda_library.fit(X, y)
+X_lda_library = lda_library.transform(X)
+# Plotting results
+plt.figure(figsize=(8, 6))
+for i, target_name in enumerate(data.target_names):
+plt.scatter(X_lda_library[y == i, 0], X_lda_library[y == i, 1], label=target_name)
+plt.title('Library LDA')
+plt.xlabel('First discriminant')
+plt.ylabel('Second discriminant')
+plt.legend()
+plt.show()
+
+3d) Dimensionality reduction using LDA Algorithm (Manual Implementation fromScratch)
+import numpy as np
+from sklearn.datasets import load_iris
+import matplotlib.pyplot as plt
+data = load_iris() # Load dataset
+X = data.data
+y = data.target
+class ManualLDA:
+def __init__(self, n_components=2):
+self.n_components = n_components
+self.means = None
+self.Sw = None
+self.Sb = None
+self.eigenvectors = None
+def fit(self, X, y):
+n_classes = len(np.unique(y))
+n_features = X.shape[1]
+overall_mean = np.mean(X, axis=0) # Calculate overall mean
+# Calculate means for each class and scatter matrices
+self.means = np.array([np.mean(X[y == i], axis=0) for i in range(n_classes)])
+self.Sw = np.zeros((n_features, n_features))
+self.Sb = np.zeros((n_features, n_features))
+for i in range(n_classes):
+# Within-class scatter
+class_scatter = np.cov(X[y == i].T)
+self.Sw += class_scatter * (X[y == i].shape[0] - 1)
+# Between-class scatter
+mean_diff = (self.means[i] - overall_mean).reshape(n_features, 1)
+self.Sb += X[y == i].shape[0] * mean_diff.dot(mean_diff.T)
+# Calculate eigenvectors and eigenvalues
+A = np.linalg.inv(self.Sw).dot(self.Sb)
+eigenvalues, eigenvectors = np.linalg.eig(A)
+# Sort eigenvectors by eigenvalues in descending order
+idx = eigenvalues.argsort()[::-1]
+self.eigenvectors = eigenvectors[:, idx][:, :self.n_components]
+def transform(self, X):
+return X.dot(self.eigenvectors)
+# Apply Manual LDA
+lda_manual = ManualLDA(n_components=2)
+lda_manual.fit(X, y)
+X_lda_manual = lda_manual.transform(X)
+# Plotting results
+plt.figure(figsize=(8, 6))
+for i, target_name in enumerate(data.target_names):
+plt.scatter(X_lda_manual[y == i, 0], X_lda_manual[y == i, 1], label=target_name)
+plt.title('Manual LDA')
+plt.xlabel('First discriminant')
+plt.ylabel('Second discriminant')
+plt.legend()
+plt.show()
+
+Q4. Implementation of various evaluation metrics using sklearn: Accuracy, Precision,
+Recall and Confusion Matrix.
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix#Three classes 0,1,2
+y_test = [0,1,2,2,1,0,1,0,2,1,0,0,1,2,2]
+y_pred = [0,2,2,2,1,0,1,0,1,1,1,0,1,2,2]
+# Compute the confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+# Calculate accuracy, precision, and recall
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred,average='macro')
+recall = recall_score(y_test, y_pred,average='macro')
+print("Accuracy:", accuracy)
+print("Precision:", precision)
+print("Recall:", recall)
+print(cm)
+
+5. Implement Linear Regression using sklearn library. Use an appropriate data set andcalculate the accuracy of your model.
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+df=pd.read_csv('placement.csv')
+X=df.iloc[:,0:1]
+y=df.iloc[:,-1]
+X_train,X_test, y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=2)
+lr=LinearRegression()
+lr.fit(X_train,y_train)
+y_test_pred = lr.predict(X_test)
+r2_test = r2_score(y_test, y_test_pred)
+print(f"R2 Score (Testing): {r2_test:.4f}")
+plt.scatter(df['cgpa'],df['package'])
+plt.plot(X_train,lr.predict(X_train),color='red')
+plt.xlabel('CGPA')
+plt.ylabel('Package in LPA')
+
+6. Implement Simple Linear Regression algorithm using the Gradient Descent Algorithm.
+(Do not make use of ML libraries like sklearn)
+import numpy as np
+X=np.array([(1,1,1,1,1,1,1,1,1),(1,2,3,4,5,6,7,8,9)]).transpose()
+Y=np.array([(2,7,6,12,14,8,14,20,18)]).transpose()
+m=9
+theta=np.array([(0.0,0.0)]).transpose()
+def gradientDescent(X,y,theta,alpha,num_iters):
+for i in range(num_iters):
+theta=theta+alpha*1/m*np.dot(X.transpose(),( Y-X.dot(theta)))
+return theta
+theta = gradientDescent(X,Y,theta,0.01,3000)
+print("h(x) ="+str(round(theta[0,0],2))+" + "+str(round(theta[1,0],2))+"x1")
+
+7a. Write program to calculate Gini Index (Used in CART Algorithm)
+import pandas as pd
+import numpy as np
+data=pd.read_csv('PlayTennis.csv')
+def gini_index(data):
+total_samples = len(data)
+if total_samples == 0:
+return 0.0
+value_counts = data.value_counts()
+gini = 1.0 - sum((count / total_samples) ** 2 for count in value_counts)
+return gini
+# Calculate weighted Gini index for each attribute
+print("\nWeighted Gini Index for each attribute:")
+for column in data.columns[:-1]:
+weighted_gini = 0
+for value in data[column].unique():
+subset = data[data[column] == value]['play']
+weight = len(subset) / len(data)
+weighted_gini += weight * gini_index(subset)
+print(f"Weighted Gini Index for '{column}': {weighted_gini:.4f}")
+
+7b. Write a program to calculate Entropy and Information Gain (Used in ID3 Algorithm)
+import pandas as pd
+import numpy as np
+data = pd.read_csv('PlayTennis.csv')
+def entropy(data):
+value_counts = data.value_counts()
+probabilities = value_counts / len(data)
+entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10)) # Add a small valuetoavoid log(0)
+return entropy
+def information_gain(data, attribute, target):
+total_entropy = entropy(data[target])
+weighted_entropy = 0
+for value in data[attribute].unique():
+subset = data[data[attribute] == value][target]
+weight = len(subset) / len(data)
+weighted_entropy += weight * entropy(subset)
+information_gain = total_entropy - weighted_entropy
+return information_gain
+# Calculate entropy for the target variable
+target_entropy = entropy(data['play'])
+print(f"Entropy for target variable 'play': {target_entropy:.4f}")
+# Calculate weighted entropy and information gain for each attribute
+print("\nWeighted Entropy and Information Gain for each attribute:")
+for column in data.columns[:-1]:
+for value in data[column].unique():
+subset = data[data[column] == value]['play']
+weight = len(subset) / len(data)
+info_gain = information_gain(data, column, 'play')
+print(f"Attribute '{column}':")
+print(f" Information Gain: {info_gain:.4f}")
+
+8. Using the sklearn library build a decision tree-based classifier (train the classifier usingID3 algorithm). Use an appropriate data set for building the decision tree and apply thisknowledge to classify a new sample.
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+df=pd.read_csv('PlayTennis.csv')
+print(df)
+enc=LabelEncoder()
+df_cat=pd.DataFrame()
+df_cat['outlook']=enc.fit_transform(df['outlook'])
+df_cat['temp']=enc.fit_transform(df['temp'])
+df_cat['humidity']=enc.fit_transform(df['humidity'])
+df_cat['windy']=enc.fit_transform(df['windy'])
+df_cat['play']=enc.fit_transform(df['play'])
+print(df_cat)
+X=df_cat.drop(['play'],axis=1)
+y=df_cat['play']
+from sklearn.tree import DecisionTreeClassifier
+dt_clf = DecisionTreeClassifier(criterion='entropy')
+dt_clf.fit(X,y)
+dt_clf.score(X,y)
+pred_y=dt_clf.predict(X)
+print(y)
+print(pred_y)
+from sklearn import tree
+tree.plot_tree(dt_clf)
+import sklearn.metrics
+lbs=[0,1]
+CF=sklearn.metrics.confusion_matrix(y,pred_y,labels=lbs)
+acc=sklearn.metrics.accuracy_score(y,pred_y)
+ps=sklearn.metrics.precision_score(y,pred_y,labels=lbs,pos_label=0)
+rs=sklearn.metrics.recall_score(y,pred_y,labels=lbs,pos_label=0)
+f1=sklearn.metrics.f1_score(y,pred_y,labels=lbs,pos_label=0)
+print('Confusion Matrix ',CF)
+print('Accuracy ',acc)
+print('Precision ',ps)
+print('Recall ',rs)
+print('F1 Score ',f1)
+
+9. Using the sklearn library build a classifier using the k-Nearest Neighbor algorithmtoclassify the iris data set. Print both correct and wrong predictions. Use the Python MLlibrary classes can be used for this problem. from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn import datasets
+iris=datasets.load_iris()
+x = iris.data
+y = iris.target
+#print ('sepal-length', 'sepal-width', 'petal-length', 'petal-width')
+#print(x)
+#print('class: 0-Iris-Setosa, 1- Iris-Versicolour, 2- Iris-Virginica')
+#print(y)
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.3)
+#To Training the model and Nearest nighbors K=5
+classifier = KNeighborsClassifier(n_neighbors=5)
+classifier.fit(x_train, y_train)
+#To make predictions on our test data
+y_pred=classifier.predict(x_test)
+print('Confusion Matrix')
+print(confusion_matrix(y_test,y_pred))
+print('Accuracy Metrics')
+print(classification_report(y_test,y_pred))
+
+10. Using the sklearn library build a Naïve Bayesian classifier for a sample trainingdataset
+stored as a .CSV file. Compute the accuracy of the classifier, considering fewtest datasets.
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB # GaussianNB for continuous features
+from sklearn.preprocessing import LabelEncoder # For categorical feature
+# Load data (replace 'path/to/tennis.csv' with the actual path)
+data = pd.read_csv('PlayTennis.csv')
+# Separate features (X) and class labels (y)
+X = data.iloc[:, 0:4]
+print(X)
+y = data.iloc[:, -1]
+print(y)
+# Encode categorical features (if necessary)
+le = LabelEncoder()
+X["outlook"] = le.fit_transform(X["outlook"])
+X["temp"] = le.fit_transform(X["temp"])
+X["humidity"] = le.fit_transform(X["humidity"])
+X["windy"] = le.fit_transform(X["windy"])
+y=le.fit_transform(y)
+print(X)
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+# Create and train the Naive Bayes classifier
+classifier = GaussianNB()
+classifier.fit(X_train, y_train)
+# Make predictions on the testing set
+y_pred = classifier.predict(X_test)
+print(y_pred,y_test)
+# Evaluate model accuracy
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:",accuracy)
+
+11. Using the sklearn library build a logistic regression classifier for the Iris data set storedas a .CSV file. Display the performance of the model in terms of accuracy, precision, recall, F1 Score, AUC and also display the confusion matrix. from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+# Load the Iris dataset from sklearn
+iris = load_iris()
+X = iris.data
+y = iris.target
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Build a logistic regression classifier
+model = LogisticRegression(max_iter=200)
+model.fit(X_train, y_train)
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred, average='macro')
+recall = recall_score(y_test, y_pred, average='macro')
+f1 = f1_score(y_test, y_pred, average='macro')
+auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class='ovr')
+# Compute confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+# Display the results
+print(f"Accuracy: {accuracy:.4f}")
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1:.4f}")
+print(f"AUC: {auc:.4f}")
+print("Confusion Matrix:\n", cm)
+
+12. Write a program to construct a Bayesian network.
+import numpy as np
+import pandas as pd
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.models import BayesianNetwork
+from pgmpy.inference import VariableElimination
+heartDisease = pd.read_csv("heart.csv")
+heartDisease = heartDisease.replace('?',np.nan)
+print('Sample instances from the dataset are given below')
+print(heartDisease.head())
+print('\n Attributes and datatypes')
+print(heartDisease.dtypes)
+model= BayesianNetwork([('age','heartdisease'),('sex','heartdisease'),('exang','heartdisease'),('cp','hear
+tdisease'),('heartdisease','restecg'),('heartdisease','chol')])
+print('\nLearning CPD using Maximum likelihood estimators')
+model.fit(heartDisease,estimator=MaximumLikelihoodEstimator)
+print('\n Inferencing with Bayesian Network:')
+HeartDiseasetest_infer = VariableElimination(model)
+print('\n 1. Probability of HeartDisease given evidence= restecg')
+q1=HeartDiseasetest_infer.query(variables=['heartdisease'],evidence={'restecg':1})
+print(q1)
+print('\n 2. Probability of HeartDisease given evidence= cp ')
+q2=HeartDiseasetest_infer.query(variables=['heartdisease'],evidence={'cp':2})
+print(q2)
+
+13. Build an Artificial Neural Network by implementing the Back propagation algorithmandtest the same using appropriate data sets
+import numpy as np
+X = np.array(([2, 9], [1, 5], [3, 6]), dtype=float) # two inputs [sleep,study]
+y = np.array(([92], [86], [89]), dtype=float) # one output [Expected % in Exams]
+X = X/np.amax(X,axis=0) # maximum of X array longitudinally
+y = y/100
+#Sigmoid Function
+def sigmoid (x):
+return 1/(1 + np.exp(-x))
+#Derivative of Sigmoid Function
+def derivatives_sigmoid(x):
+return x * (1 - x)
+#Variable initialization
+epoch=5000 #Setting training iterations
+lr=0.1 #Setting learning rate
+inputlayer_neurons = 2 #number of features in data set
+hiddenlayer_neurons = 3 #number of hidden layers neurons
+output_neurons = 1 #number of neurons at output layer
+#weight and bias initialization
+wh=np.random.uniform(size=(inputlayer_neurons,hiddenlayer_neurons)) #weight of thelinkfrom input node to hidden node
+bh=np.random.uniform(size=(1,hiddenlayer_neurons)) # bias of the link frominput nodetohidden node
+wout=np.random.uniform(size=(hiddenlayer_neurons,output_neurons)) #weight of thelinkfrom hidden node to output node
+bout=np.random.uniform(size=(1,output_neurons)) #bias of the link fromhidden nodetooutput node
+#draws a random range of numbers uniformly of dim x*y
+for i in range(epoch):
+#Forward Propogation
+hinp1=np.dot(X,wh)
+hinp=hinp1 + bh
+hlayer_act = sigmoid(hinp)
+outinp1=np.dot(hlayer_act,wout)
+outinp= outinp1+ bout
+output = sigmoid(outinp)
+#Backpropagation
+EO = y-output
+outgrad = derivatives_sigmoid(output)
+d_output = EO* outgrad
+EH = d_output.dot(wout.T)
+#how much hidden layer weights contributed to error
+hiddengrad = derivatives_sigmoid(hlayer_act)
+d_hiddenlayer = EH * hiddengrad
+# dotproduct of nextlayererror and currentlayerop
+wout += hlayer_act.T.dot(d_output) *lr
+wh += X.T.dot(d_hiddenlayer) *lr
+print("Input: \n" + str(X))
+print("Actual Output: \n" + str(y))
+print("Predicted Output: \n" ,output)
+
+14. Implement K-Means Clustering on iris dataset using the scikit-learn (sklearn) libraryfrom sklearn.datasets import load_iris
+from sklearn.cluster import KMeans
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Load the Iris dataset
+iris = load_iris()
+X = iris.data
+feature_names = iris.feature_names
+# Convert to DataFrame for easier handling
+iris_df = pd.DataFrame(X, columns=feature_names)
+# Apply K-Means clustering
+kmeans = KMeans(n_clusters=3, random_state=42)
+labels = kmeans.fit_predict(X)
+# Add cluster labels to the DataFrame
+iris_df['Cluster'] = labels
+# Set the style of seaborn
+sns.set(style='whitegrid')
+# Create the scatter plot
+plt.figure(figsize=(10, 6))
+scatter = plt.scatter(iris_df['sepal length (cm)'], iris_df['sepal width (cm)'], c=iris_df['Cluster'], cmap='viridis')
+# Plot the cluster centers
+centers = kmeans.cluster_centers_ plt.scatter(centers[:, 0], centers[:, 1], c='red', marker='X', s=200, label='Centroids')
+# Set labels and title
+plt.title('K-Means Clustering on Iris Dataset')
+plt.xlabel('Sepal Length (cm)')
+plt.ylabel('Sepal Width (cm)')
+# Add a legend
+plt.legend()
+# Show the plot
+plt.show()
+
+15. Demonstrates the effect of different metrics on the hierarchical clustering withAgglomerative clustering with different metrics
+import numpy as np
+from scipy.cluster.hierarchy import linkage, dendrogram
+import matplotlib.pyplot as plt
+# Data points
+x = [4, 5, 10, 4, 3, 11, 14, 6, 10, 12]
+y = [21, 19, 24, 17, 16, 25, 24, 22, 21, 21]
+# Create a 2D array from x and y
+X = np.array(list(zip(x, y)))
+# Define methods and metrics
+methods = ['single', 'complete', 'average', 'weighted', 'centroid', 'median', 'ward']
+metrics = ['euclidean', 'minkowski', 'cityblock', 'cosine', 'hamming']
+# Create valid combinations
+combinations = []
+for method in methods:
+for metric in metrics:
+# Only euclidean distance is allowed for centroid, median, and ward
+if method in ['centroid', 'median', 'ward'] and metric != 'euclidean':
+continue
+combinations.append((method, metric))
+# Create subplots for each combination
+fig = plt.figure(figsize=(20, 30))
+for i, (method, metric) in enumerate(combinations):
+plt.subplot(len(combinations), 1, i+1)
+Z = linkage(X, method=method, metric=metric)
+dendrogram(Z)
+plt.title(f'{method} - {metric}')
+plt.xlabel('sample index')
+plt.ylabel('distance')
+plt.tight_layout()
+plt.show()
+
+16. Write a python code for Agglomerative clustering, compute the ward linkage usingEuclidean distance, and visualize it using a dendrogram
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import dendrogram, linkage
+from sklearn.cluster import AgglomerativeClustering
+x = [4, 5, 10, 4, 3, 11, 14 , 6, 10, 12]
+y = [21, 19, 24, 17, 16, 25, 24, 22, 21, 21]
+data = list(zip(x, y))
+linkage_data = linkage(data, method='ward', metric='euclidean')
+dendrogram(linkage_data)
+plt.show()
+hierarchical_cluster = AgglomerativeClustering(n_clusters=2, metric='euclidean', linkage='ward')
+labels = hierarchical_cluster.fit_predict(data)
+print(labels)
+plt.scatter(x, y, c=labels)
+plt.show()
